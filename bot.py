@@ -158,8 +158,19 @@ async def auto_terabox_listener(client, message):
 
         size = os.path.getsize(tmp_path)
         print(f"[HANDLER] Download complete ({size/(1024*1024):.2f} MB). Preparing to upload.")
+
+        # check file size
         if size > TELEGRAM_MAX_BYTES:
-            await status_msg.edit_text(f"⚠️ File bada hai ({size/(1024*1024):.2f} MB) — 2GB se zyada nahi bhej sakta.")
+            try:
+                # direct download link fallback (if valid)
+                await status_msg.edit_text(
+                    f"⚠️ File badi hai ({size/(1024*1024):.2f} MB)\n"
+                    f"📥 Direct download link (valid for some time):\n{direct}\n\n"
+                    f"Telegram pe 2 GB se zyada upload nahi hota."
+                )
+                print(f"[HANDLER] Skipped upload — file too large ({size} bytes).")
+            except Exception as e:
+                print("[HANDLER] Failed to send big-file message:", e)
             return
 
         await status_msg.edit_text("⏫ Uploading to Telegram...")
